@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function App() {
   const [inputText, setInputText] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,23 +15,24 @@ function App() {
       return;
     }
 
-    console.log('start query');
     setErrorMessage('');
+    setIsLoading(true); 
 
     try {
       const response = await axios.post('https://google-scrapper.salmonmeadow-e1ce40e9.northeurope.azurecontainerapps.io', { reqString: inputText }, { responseType: 'blob' });
       console.log('Відповідь від сервера:', response);
 
-      // Створюємо об'єкт URL для завантаження Excel-файлу
+      
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', 'output.xlsx');
       document.body.appendChild(link);
       link.click();
-
     } catch (error) {
       console.error('Помилка при відправці запиту:', error);
+    } finally {
+      setIsLoading(false); 
     }
   };
 
@@ -47,6 +49,7 @@ function App() {
           />
         </label>
         <button type="submit">Send</button>
+        {isLoading ? <p>Loading...</p> : null} {/* Відображення індікатора очікування */}
         <p style={{ color: 'red' }}>{errorMessage}</p>
       </form>
     </div>
